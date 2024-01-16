@@ -1,1 +1,4 @@
-# impl
+
+build:
+	go build
+	go install
