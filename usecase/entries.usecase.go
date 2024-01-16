@@ -10,11 +10,16 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+
+	"go-graphql-cli/domain/models/graphql"
+	"go-graphql-cli/domain/repositories"
+	"go-graphql-cli/usecase/converter"
 )
 
 type (
 	entriesUseCase interface {
 		Fetch(arg string)
+		GetEntries() ([]*graphql.Entry, error)
 	}
 	entriesUseCaseImpl struct{}
 	Entry              struct {
@@ -77,4 +82,12 @@ func (u *entriesUseCaseImpl) Fetch(arg string) {
 	fmt.Printf("CreatedAt: %s\n", entry.Sys.CreatedAt)
 
 	// TODO: call repository
+}
+
+func (u *entriesUseCaseImpl) GetEntries() ([]*graphql.Entry, error) {
+	es, err := repositories.NewEntryRepository().GetEntries()
+	if err != nil {
+		return nil, err
+	}
+	return converter.NewEntriesConverter().ConvertEntitiesToGraphQLType(es), nil
 }
