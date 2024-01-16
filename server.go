@@ -9,13 +9,14 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 
 	"go-graphql-cli/adapters/resolvers"
+	"go-graphql-cli/domain/repositories"
 	"go-graphql-cli/infra/graph"
 )
 
 const defaultPort = "8080"
 
-// func main() {
-func run() {
+func main() {
+// func run() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
@@ -28,4 +29,6 @@ func run() {
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
+
+	repositories.NewRepository()
 }
