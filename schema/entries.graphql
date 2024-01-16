@@ -1,1 +1,9 @@
-# impl
+type Entry {
+  id: String!
+  name: String!
+  createdAt: String!
+}
+
+type Query {
+  getEntries: [Entry!]!
+}
