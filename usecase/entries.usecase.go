@@ -17,12 +17,15 @@ import (
 )
 
 type (
-	entriesUseCase interface {
+	EntriesUseCase interface {
 		Fetch(arg string)
 		GetEntries() ([]*graphql.Entry, error)
 		GetEntry(id string) (*graphql.Entry, error)
 	}
-	entriesUseCaseImpl struct{}
+	entriesUseCaseImpl struct{
+		converter converter.EntriesConverter
+		repository repositories.EntryRepository
+	}
 	Entry              struct {
 		Sys    Sys    `json:"sys"`
 		Fields Fields `json:"fields"`
@@ -36,8 +39,14 @@ type (
 	}
 )
 
-func NewEntriesUseCase() entriesUseCase {
-	return &entriesUseCaseImpl{}
+func NewEntriesUseCase(
+	c converter.EntriesConverter,
+	r repositories.EntryRepository,
+) EntriesUseCase {
+	return &entriesUseCaseImpl{
+		converter: c,
+		repository: r,
+	}
 }
 
 func (u *entriesUseCaseImpl) Fetch(arg string) {
@@ -86,21 +95,21 @@ func (u *entriesUseCaseImpl) Fetch(arg string) {
 }
 
 func (u *entriesUseCaseImpl) GetEntries() ([]*graphql.Entry, error) {
-	es, err := repositories.NewEntryRepository().GetEntries()
+	es, err := u.repository.GetEntries()
 	if err != nil {
 		return nil, err
 	}
 	var entries []*graphql.Entry
 	for _, e := range es {
-		entries = append(entries, converter.NewEntriesConverter().ConvertEntityToGraphQLType(&e))
+		entries = append(entries, u.converter.ConvertEntityToGraphQLType(&e))
 	}
 	return entries, nil
 }
 
 func (u *entriesUseCaseImpl) GetEntry(id string) (*graphql.Entry, error) {
-	e, err := repositories.NewEntryRepository().GetEntry(id)
+	e, err := u.repository.GetEntry(id)
 	if err != nil {
 		return nil, err
 	}
-	return converter.NewEntriesConverter().ConvertEntityToGraphQLType(e), nil
+	return u.converter.ConvertEntityToGraphQLType(e), nil
 }
