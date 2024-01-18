@@ -10,19 +10,28 @@ import (
 
 	"go-graphql-cli/adapters/resolvers"
 	"go-graphql-cli/domain/repositories"
+	"go-graphql-cli/infra/db"
 	"go-graphql-cli/infra/graph"
 )
 
 const defaultPort = "8080"
 
 func main() {
-// func run() {
+	// db connection
+	gormDB, err := db.InitDB()
+	if err != nil {
+		log.Fatal("Error connecting to database")
+	}
+
+	// web server
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
 	}
 
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &resolvers.Resolver{}}))
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
+		Resolvers: resolvers.NewResolver(gormDB),
+	}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
