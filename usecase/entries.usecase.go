@@ -20,6 +20,7 @@ type (
 	entriesUseCase interface {
 		Fetch(arg string)
 		GetEntries() ([]*graphql.Entry, error)
+		GetEntry(id string) (*graphql.Entry, error)
 	}
 	entriesUseCaseImpl struct{}
 	Entry              struct {
@@ -89,5 +90,17 @@ func (u *entriesUseCaseImpl) GetEntries() ([]*graphql.Entry, error) {
 	if err != nil {
 		return nil, err
 	}
-	return converter.NewEntriesConverter().ConvertEntitiesToGraphQLType(es), nil
+	var entries []*graphql.Entry
+	for _, e := range es {
+		entries = append(entries, converter.NewEntriesConverter().ConvertEntityToGraphQLType(&e))
+	}
+	return entries, nil
+}
+
+func (u *entriesUseCaseImpl) GetEntry(id string) (*graphql.Entry, error) {
+	e, err := repositories.NewEntryRepository().GetEntry(id)
+	if err != nil {
+		return nil, err
+	}
+	return converter.NewEntriesConverter().ConvertEntityToGraphQLType(e), nil
 }

@@ -14,6 +14,7 @@ import (
 type (
     EntryRepository interface {
         GetEntries() ([]entities.Entry, error)
+        GetEntry(id string) (*entities.Entry, error)
     }
     entryRepositoryImpl struct{}
 )
@@ -46,4 +47,30 @@ func (r *entryRepositoryImpl) GetEntries() ([]entities.Entry, error) {
     }
 
     return entries, nil
+}
+
+func (r *entryRepositoryImpl) GetEntry(id string) (*entities.Entry, error) {
+    err := godotenv.Load()
+    if err != nil {
+        return nil, fmt.Errorf("Error loading .env file: %w", err)
+    }
+
+    postgresUser := os.Getenv("POSTGRES_USER")
+    postgresPassword := os.Getenv("POSTGRES_PASSWORD")
+    postgresDb := os.Getenv("POSTGRES_DB")
+    postgresHost := os.Getenv("POSTGRES_HOST")
+    postgresPort := os.Getenv("POSTGRES_PORT")
+
+    dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", postgresUser, postgresPassword, postgresHost, postgresPort, postgresDb)
+    db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+    if err != nil {
+        return nil, fmt.Errorf("Failed to connect to database: %w", err)
+    }
+
+    var entry entities.Entry
+    if err := db.Where("id = ?", id).First(&entry).Error; err != nil {
+        return nil, fmt.Errorf("Failed to get entry: %w", err)
+    }
+
+    return &entry, nil
 }

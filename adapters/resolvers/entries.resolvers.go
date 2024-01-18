@@ -6,14 +6,19 @@ package resolvers
 
 import (
 	"context"
-	model "go-graphql-cli/domain/models/graphql"
+	"go-graphql-cli/domain/models/graphql"
 	"go-graphql-cli/infra/graph"
 	"go-graphql-cli/usecase"
 )
 
 // GetEntries is the resolver for the getEntries field.
-func (r *queryResolver) GetEntries(ctx context.Context) ([]*model.Entry, error) {
+func (r *queryResolver) GetEntries(ctx context.Context) ([]*graphql.Entry, error) {
 	return usecase.NewEntriesUseCase().GetEntries()
+}
+
+// GetEntry is the resolver for the getEntry field.
+func (r *queryResolver) GetEntry(ctx context.Context, id string) (*graphql.Entry, error) {
+	return usecase.NewEntriesUseCase().GetEntry(id)
 }
 
 // Query returns graph.QueryResolver implementation.
