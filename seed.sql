@@ -8,4 +8,7 @@ CREATE TABLE entries (
 -- Insert data into the 'entries' table
 INSERT INTO entries (id, name, created_at)
 VALUES
-    ('id1', 'entry_name1', '2024-01-16 00:00:00');
+    ('id1', 'entry_name1', '2024-01-16 00:00:00')
+    ,('id2', 'entry_name2', '2024-01-16 00:00:00')
+    ,('id3', 'entry_name3', '2024-01-16 00:00:00')
+;

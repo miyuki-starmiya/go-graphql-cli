@@ -6,4 +6,5 @@ type Entry {
 
 type Query {
   getEntries: [Entry!]!
+  getEntry(id: String!): Entry!
 }
