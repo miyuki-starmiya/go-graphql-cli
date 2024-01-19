@@ -10,7 +10,6 @@ import (
 
 	"go-graphql-cli/adapters/resolvers"
 	"go-graphql-cli/cmd"
-	"go-graphql-cli/domain/repositories"
 	"go-graphql-cli/infra/db"
 	"go-graphql-cli/infra/graph"
 )
@@ -27,7 +26,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// web server
+	// run GraphQL server
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
@@ -42,6 +41,4 @@ func main() {
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
-
-	repositories.NewRepository()
 }

@@ -78,7 +78,6 @@ func (u *entriesUseCaseImpl) Fetch(arg string) (*entities.Entry, error) {
 		return nil, fmt.Errorf("Error unmarshaling JSON data: %w", err)
 	}
 
-	// Print the Entry struct
 	entry := &entities.Entry{
 		ID:        entryRes.Sys.ID,
 		Name:      entryRes.Fields.Name,
