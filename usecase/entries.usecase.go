@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/joho/godotenv"
 
+	"go-graphql-cli/domain/models/entities"
 	"go-graphql-cli/domain/models/graphql"
 	"go-graphql-cli/domain/repositories"
 	"go-graphql-cli/usecase/converter"
@@ -18,15 +18,16 @@ import (
 
 type (
 	EntriesUseCase interface {
-		Fetch(arg string)
+		Fetch(arg string) (*entities.Entry, error)
 		GetEntries() ([]*graphql.Entry, error)
 		GetEntry(id string) (*graphql.Entry, error)
+		CreateEntry(entry *entities.Entry) error
 	}
 	entriesUseCaseImpl struct{
 		converter converter.EntriesConverter
 		repository repositories.EntryRepository
 	}
-	Entry              struct {
+	EntryRes              struct {
 		Sys    Sys    `json:"sys"`
 		Fields Fields `json:"fields"`
 	}
@@ -49,49 +50,49 @@ func NewEntriesUseCase(
 	}
 }
 
-func (u *entriesUseCaseImpl) Fetch(arg string) {
+func (u *entriesUseCaseImpl) Fetch(arg string) (*entities.Entry, error) {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		return nil, fmt.Errorf("Error loading .env file: %w", err)
 	}
 
 	accessToken := os.Getenv("ACCESS_TOKEN")
 	fmt.Printf("arg: %s\n", arg)
-
-	// Define the URL with the access token
 	url := fmt.Sprintf("https://cdn.contentful.com/spaces/2vskphwbz4oc/entries/%s?access_token=%s", arg, accessToken)
 
-	// Make the GET request
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println("Error making GET request:", err)
-		return
+		return nil, fmt.Errorf("Error making GET request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading response body:", err)
-		return
+		return nil, fmt.Errorf("Error reading response body: %w", err)
 	}
 
-	// Define an Entry variable to hold the unmarshaled data
-	var entry Entry
+	var entryRes EntryRes
 
-	// Unmarshal the JSON data into the Entry struct
-	err = json.Unmarshal(body, &entry)
+	err = json.Unmarshal(body, &entryRes)
 	if err != nil {
-		fmt.Println("Error unmarshaling JSON:", err)
-		return
+		return nil, fmt.Errorf("Error unmarshaling JSON data: %w", err)
 	}
 
 	// Print the Entry struct
-	fmt.Printf("ID: %s\n", entry.Sys.ID)
-	fmt.Printf("Name: %s\n", entry.Fields.Name)
-	fmt.Printf("CreatedAt: %s\n", entry.Sys.CreatedAt)
+	entry := &entities.Entry{
+		ID:        entryRes.Sys.ID,
+		Name:      entryRes.Fields.Name,
+		CreatedAt: entryRes.Sys.CreatedAt,
+	}
 
-	// TODO: call repository
+	return entry, nil
+}
+
+func (u *entriesUseCaseImpl) CreateEntry(entry *entities.Entry) error {
+	if err := u.repository.CreateEntry(entry); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (u *entriesUseCaseImpl) GetEntries() ([]*graphql.Entry, error) {
