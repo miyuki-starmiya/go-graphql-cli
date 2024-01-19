@@ -24,7 +24,7 @@ func main() {
 	// db connection
 	gormDB, err := db.InitDB()
 	if err != nil {
-		log.Fatal("Error connecting to database")
+		log.Fatal(err)
 	}
 
 	// web server

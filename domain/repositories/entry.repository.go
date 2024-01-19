@@ -12,6 +12,7 @@ type (
     EntryRepository interface {
         GetEntries() ([]entities.Entry, error)
         GetEntry(id string) (*entities.Entry, error)
+        CreateEntry(entry *entities.Entry) error
     }
     entryRepositoryImpl struct{
         db *gorm.DB
@@ -40,4 +41,12 @@ func (r *entryRepositoryImpl) GetEntry(id string) (*entities.Entry, error) {
     }
 
     return &entry, nil
+}
+
+func (r *entryRepositoryImpl) CreateEntry(entry *entities.Entry) error {
+    if err := r.db.Create(&entry).Error; err != nil {
+        return fmt.Errorf("Failed to create entry: %w", err)
+    }
+
+    return nil
 }

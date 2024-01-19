@@ -27,14 +27,21 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		gormDB, err := db.InitDB()
 		if err != nil {
-			log.Fatal("Error connecting to database")
+			log.Printf("Failed to initialize DB: %v", err)
+			return
 		}
 
 		u := usecase.NewEntriesUseCase(
 			converter.NewEntriesConverter(),
 			repositories.NewEntryRepository(gormDB),
 		)
-		u.Fetch(args[0])
+		entry, err := u.Fetch(args[0])
+		if err != nil {
+			log.Printf("Failed to fetch entry: %v", err)
+			return
+		}
+		log.Println(entry)
+		u.CreateEntry(entry)
 	},
 }
 
