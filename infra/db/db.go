@@ -7,6 +7,8 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	"go-graphql-cli/domain/models/entities"
 )
 
 var DB *gorm.DB
@@ -23,10 +25,17 @@ func InitDB() (*gorm.DB, error) {
     postgresHost := os.Getenv("POSTGRES_HOST")
     postgresPort := os.Getenv("POSTGRES_PORT")
 
+    // connect to db
     dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", postgresUser, postgresPassword, postgresHost, postgresPort, postgresDb)
     db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
     if err != nil {
         return nil, fmt.Errorf("Failed to connect to database: %w", err)
     }
+
+    // migrate
+    db.AutoMigrate(
+        &entities.Entry{},
+    )
+
 	return db, nil
 }
