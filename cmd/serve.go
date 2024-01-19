@@ -4,9 +4,14 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"log"
+
 	"github.com/spf13/cobra"
 
+	"go-graphql-cli/domain/repositories"
+	"go-graphql-cli/infra/db"
 	"go-graphql-cli/usecase"
+	"go-graphql-cli/usecase/converter"
 )
 
 // serveCmd represents the serve command
@@ -20,7 +25,16 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		usecase.NewEntriesUseCase().Fetch(args[0])
+		gormDB, err := db.InitDB()
+		if err != nil {
+			log.Fatal("Error connecting to database")
+		}
+
+		u := usecase.NewEntriesUseCase(
+			converter.NewEntriesConverter(),
+			repositories.NewEntryRepository(gormDB),
+		)
+		u.Fetch(args[0])
 	},
 }
 

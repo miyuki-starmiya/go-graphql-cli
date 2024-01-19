@@ -1,10 +1,11 @@
 # go-graphql-cli
 
 ## 実行手順
-### CLI
 ```sh
-$ go build
-$ go install
-$ go-graphql-cli <cmd>
+$ docker-compose build
+$ docker-compose up
+# cli
+$ docker-compose exec app sh
+# run command via cli
+$ go-graphql serve <entry-id>
 ```
-
